@@ -2,9 +2,11 @@ using Leopotam.EcsLite;
 using UnityEngine;
 
 namespace Client {
-    sealed class EcsStartup : MonoBehaviour {
+    sealed class EcsStartup : MonoBehaviour 
+    {
         EcsWorld _world;        
         IEcsSystems _systems;
+        
 
         void Start () {
             _world = new EcsWorld ();
@@ -22,6 +24,8 @@ namespace Client {
                 .Add (new Leopotam.EcsLite.UnityEditor.EcsWorldDebugSystem ())
 #endif
                 .Init ();
+            
+            
         }
 
         void Update () {

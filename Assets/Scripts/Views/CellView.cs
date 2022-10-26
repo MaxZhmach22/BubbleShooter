@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using NaughtyAttributes;
 using UniRx;
 using UnityEditor;
@@ -17,8 +19,10 @@ namespace BubbleShooter
         [field: BoxGroup("Settings")] [field: SerializeField] public Renderer Renderer { get; private set; }
         [field: BoxGroup("Settings")] [field: SerializeField] public Collider Collider { get; private set; }
         [field: Foldout("References")] [field: SerializeField] public List<Material> Materials { get; private set; }
-        
 
+        private bool _isBlowed;
+        private Vector3 _defaultScale;
+        
         private void Awake()
         {
             if(!Renderer) Renderer = GetComponentInChildren<Renderer>();
@@ -27,13 +31,22 @@ namespace BubbleShooter
             this.ObserveEveryValueChanged(x => x.ColorTypes)
                 .Subscribe(x => SwitchColor(x))
                 .AddTo(this);
+            
+#if UNITY_EDITOR
+            Observable.EveryUpdate()
+                .Where(_ => Input.GetKeyDown(KeyCode.B))
+                .Where(_ => gameObject == Selection.gameObjects[0])
+                .Subscribe(_ => Blow(0))
+                .AddTo(this);
+#endif
         }
 
-        public void Init(Renderer renderer, Collider collider, List<Material> materials)
+        public void Init(Renderer renderer, Collider collider, List<Material> materials, Vector3 localSphereScale)
         {
             Renderer = renderer;
             Collider = collider;
             Materials = materials;
+            _defaultScale = renderer.transform.localScale;
         }
 
         private void SwitchColor(ColorTypes colorTypes)
@@ -67,7 +80,38 @@ namespace BubbleShooter
                 NeighboursList.ForEach(x => DebugExtension.DebugWireSphere(x.transform.position, Color.magenta, 0.3f, 3f));
             }
         }
-        
+
+        //[Button("Blow!")]
+        public async void Blow(float timeShift)
+        {
+            if(_isBlowed || ColorTypes == ColorTypes.None) return;
+
+            var nextTime = timeShift + 0.05f;
+            _isBlowed = true;
+            foreach (var cell in NeighboursList)
+            {
+                if (cell.ColorTypes == ColorTypes)
+                {
+                    cell.Blow(nextTime);
+                }
+            }
+
+            await UniTask.Delay(TimeSpan.FromSeconds(timeShift),
+                cancellationToken: this.GetCancellationTokenOnDestroy());
+            Renderer.gameObject.transform.DOScale(Vector3.one * 1.2f, 1f)
+                .SetEase(Ease.OutElastic)
+                .OnComplete(() => gameObject.SetActive(false));
+        }
+
+        public void Reset()
+        {
+            if(!Renderer) return;
+            
+            _isBlowed = false;
+            gameObject.SetActive(true);
+        }
+
+
         private void OnValidate()
         {
             if(Materials != null)

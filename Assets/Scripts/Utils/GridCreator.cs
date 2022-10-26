@@ -25,7 +25,7 @@ namespace BubbleShooter
         [field: Foldout("Grid")] [field: SerializeField] public List<CellView> CellsList { get; private set; }
 
         private float _currentYOffset;
-        private bool[] _chance = new bool[99];
+        private bool[] _chance = new bool[100];
         private int _previousColorValue;
 
         private void Awake()
@@ -88,6 +88,7 @@ namespace BubbleShooter
                     _currentYOffset += x == intYOffset ? 0 : YOffset;
                     go.transform.position = new Vector3(x + xOffset, y-_currentYOffset, 0) + StartPoisiton.position;
                     go.transform.SetParent(Parent);
+                    go.transform.localScale = Vector3.one;
                     var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     sphere.transform.SetParent(go.transform);
                     sphere.transform.localPosition = Vector3.zero;
@@ -95,7 +96,7 @@ namespace BubbleShooter
                     var renderer = sphere.GetComponent<Renderer>();
                     var collider = sphere.GetComponent<Collider>();
                     var cellVeiw = go.AddComponent<CellView>();
-                    cellVeiw.Init(renderer, collider, Materials);
+                    cellVeiw.Init(renderer, collider, Materials, sphere.transform.localScale);
                     CellsList.Add(cellVeiw);
                     intYOffset++;
                 }
@@ -174,7 +175,16 @@ namespace BubbleShooter
             {
                 print($"{CellsList} is null");
                 return;
-            } 
+            }
+
+            if (ChanceToColorizeInSameColor == _chance.Length)
+            {
+                _previousColorValue++;
+                if (_previousColorValue >= 5)
+                {
+                    _previousColorValue = 0;
+                }
+            }
             
             foreach (var cellView in CellsList)
             {

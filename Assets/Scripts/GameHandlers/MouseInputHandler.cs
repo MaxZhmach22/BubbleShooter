@@ -9,14 +9,17 @@ namespace BubbleShooter
     public class MouseInputHandler : IDisposable
     {
         private readonly Camera _camera = Camera.main;
+        private readonly MainMenuScreen _mainMenuScreen;
         private readonly Transform _startTransform;
         private readonly Slider _slider;
         private readonly Material _selectionMaterial;
         private readonly CompositeDisposable _disposable = new ();
         public Dictionary<CellView, Material> SelectedCells = new ();
 
-        public MouseInputHandler(Transform startTransform, Slider slider, Material selectedMaterial)
+        public MouseInputHandler(MainMenuScreen mainMenuScreen, Transform startTransform, Slider slider,
+            Material selectedMaterial)
         {
+            _mainMenuScreen = mainMenuScreen;
             _startTransform = startTransform;
             _slider = slider;
             _selectionMaterial = selectedMaterial;
@@ -27,9 +30,9 @@ namespace BubbleShooter
         {
             Observable.EveryFixedUpdate()
                 .Where(_ => Input.GetMouseButton(0))
+                .Where(_ => !_mainMenuScreen.gameObject.activeSelf)
                 .Subscribe(_ => Raycasting())
                 .AddTo(_disposable);
-            
         }
 
         public void ResetSelected()

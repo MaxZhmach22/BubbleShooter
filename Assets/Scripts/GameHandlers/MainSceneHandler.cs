@@ -22,6 +22,7 @@ namespace BubbleShooter
             _screens = FindObjectsOfType<ScreenBase>(true);
             
             _mouseInputHandler = new MouseInputHandler(
+                    MainMenuScreen,
                     GridCreator.StartPoisiton, 
                     LevelSettingsScreen.RadiusSlider,
                     GridCreator.SelectionMaterial)
@@ -77,6 +78,13 @@ namespace BubbleShooter
             LevelSettingsScreen.Apply.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
+                    foreach (var cells in _mouseInputHandler.SelectedCells)
+                    {
+                        if (cells.Key.Renderer.material.color == GridCreator.SelectionMaterial.color)
+                        {
+                            cells.Key.Renderer.material = cells.Value;
+                        }
+                    }
                     _mouseInputHandler.SelectedCells.Clear();
                 })
                 .AddTo(this);
