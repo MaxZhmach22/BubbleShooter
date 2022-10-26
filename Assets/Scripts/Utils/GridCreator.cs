@@ -96,6 +96,8 @@ namespace BubbleShooter
                     var renderer = sphere.GetComponent<Renderer>();
                     var collider = sphere.GetComponent<Collider>();
                     var cellVeiw = go.AddComponent<CellView>();
+                    cellVeiw.gameObject.layer = (int)Layers.Cell;
+                    sphere.gameObject.layer = (int) Layers.Cell;
                     cellVeiw.Init(renderer, collider, Materials, sphere.transform.localScale);
                     CellsList.Add(cellVeiw);
                     intYOffset++;
@@ -220,7 +222,7 @@ namespace BubbleShooter
                 Gizmos.color = Color.cyan;
                 foreach (var cell in CellsList)
                 {
-                    Gizmos.DrawWireCube(cell.transform.position, cell.transform.localScale);
+                    //Gizmos.DrawWireCube(cell.transform.position, cell.transform.localScale);
                     if (DrawDebugSphere)
                     {
                         Gizmos.DrawSphere(cell.transform.position, cell.transform.localScale.x /2);

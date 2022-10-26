@@ -24,11 +24,14 @@ namespace GameHandlers
             GameScreen.Restart.OnClickAsObservable()
                 .Subscribe(_ =>
                 {
-                    GridCreator.CellsList.ForEach(x =>
+                    if (GridCreator)
                     {
-                        x.Renderer.transform.localScale = GridCreator.LocalSphereScale;
-                        x.Reset();
-                    });
+                        GridCreator.CellsList.ForEach(x =>
+                        {
+                            x.Renderer.transform.localScale = GridCreator.LocalSphereScale;
+                            x.Reset();
+                        });
+                    }
                     SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
                 })
                 .AddTo(this);

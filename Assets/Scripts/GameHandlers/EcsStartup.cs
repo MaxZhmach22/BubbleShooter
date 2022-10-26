@@ -1,50 +1,105 @@
+using GameHandlers;
 using Leopotam.EcsLite;
+using Leopotam.EcsLite.Di;
 using UnityEngine;
 
-namespace Client {
+
+namespace BubbleShooter 
+{
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(GameUiHandler))]
     sealed class EcsStartup : MonoBehaviour 
     {
-        EcsWorld _world;        
-        IEcsSystems _systems;
-        
+        private EcsWorld _world;        
+        private IEcsSystems _initSystems;
+        private IEcsSystems _fixedUpdateSystems;
+        private IEcsSystems _updateSystems;
 
-        void Start () {
+        private GameUiHandler _gameUiHandler;
+        private GridCreator _gridCreator;
+        private DynamicJoystick _dynamicJoystick;
+        private LevelSetting _levelSetting;
+
+        void Start ()
+        {
+            _gameUiHandler = GetComponent<GameUiHandler>();
+            _gridCreator = _gameUiHandler.GridCreator;
+            _dynamicJoystick = _gameUiHandler.GameScreen.DynamicJoystick;
+            _levelSetting = GetComponent<LevelSetting>();
+            
             _world = new EcsWorld ();
-            _systems = new EcsSystems (_world);
-            _systems
-                // register your systems here, for example:
-                // .Add (new TestSystem1 ())
-                // .Add (new TestSystem2 ())
-                
-                // register additional worlds here, for example:
-                // .AddWorld (new EcsWorld (), "events")
+            _initSystems = new EcsSystems(_world);
+            _fixedUpdateSystems = new EcsSystems(_world);
+            _updateSystems = new EcsSystems (_world);
+
+            AddInitSystems();
+            AddFixedUpdateSystems();
+            AddUpdateSystems();
+            
+            InjectDependencies();
+            
+            _initSystems.Init();
+            _fixedUpdateSystems.Init();
+            _updateSystems.Init();
+        }
+
+        private void AddInitSystems()
+        {
+            _initSystems
+                .Add(new InputInitSystem())
+                .Add(new PlayerInitSystem());
+        }
+
+        private void AddFixedUpdateSystems()
+        {
+            _fixedUpdateSystems
+                .Add(new DrawRaySystem());
+        }
+
+        private void AddUpdateSystems()
+        {
+            _updateSystems
 #if UNITY_EDITOR
-                // add debug systems for custom worlds here, for example:
-                // .Add (new Leopotam.EcsLite.UnityEditor.EcsWorldDebugSystem ("events"))
-                .Add (new Leopotam.EcsLite.UnityEditor.EcsWorldDebugSystem ())
+                .Add(new Leopotam.EcsLite.UnityEditor.EcsWorldDebugSystem())
 #endif
-                .Init ();
-            
-            
+                .Add(new InputRunSystem())
+                .Add(new MouseButtonInputSystem())
+                .Add(new PlayerMovement());
         }
 
-        void Update () {
-            // process systems here.
-            _systems?.Run ();
+        private void InjectDependencies()
+        {
+            _initSystems
+                .Inject()
+                .Inject(_gameUiHandler, _gridCreator, _dynamicJoystick, _levelSetting);
+
+            _fixedUpdateSystems
+                .Inject()
+                .Inject(_gameUiHandler, _gridCreator, _dynamicJoystick, _levelSetting);
+
+            _updateSystems
+                .Inject()
+                .Inject(_gameUiHandler, _gridCreator, _dynamicJoystick, _levelSetting);
         }
 
-        void OnDestroy () {
-            if (_systems != null) {
-                // list of custom worlds will be cleared
-                // during IEcsSystems.Destroy(). so, you
-                // need to save it here if you need.
-                _systems.Destroy ();
-                _systems = null;
+        private void FixedUpdate()
+        {
+            _fixedUpdateSystems?.Run();
+        }
+        
+        private void Update () 
+        {
+            _updateSystems?.Run ();
+        }
+
+        private void OnDestroy () 
+        {
+            if (_updateSystems != null) 
+            {
+                _updateSystems.Destroy ();
+                _updateSystems = null;
             }
             
-            // cleanup custom worlds here.
-            
-            // cleanup default world.
             if (_world != null) {
                 _world.Destroy ();
                 _world = null;
