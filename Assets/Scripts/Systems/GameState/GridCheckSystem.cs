@@ -10,6 +10,7 @@ namespace BubbleShooter
     {
         private readonly EcsWorldInject _world = default;
         private readonly EcsCustomInject<GridCreator> _gridCreator = default;
+        private readonly EcsCustomInject<LevelSetting> _levelSettings = default;
         private readonly EcsPoolInject<OpenCellRequest> _requestPool = default;
         private readonly EcsPoolInject<PlayerComponent> _playerPool = default;
         private readonly EcsFilterInject<Inc<PlayerComponent, OpenCellRequest>> _filter = default;
@@ -39,6 +40,7 @@ namespace BubbleShooter
                     cellInGrid.ColorTypes = playerComp.ColorType;
                 }
                 
+                _levelSettings.Value.Line.SetPositions(new Vector3[0]);
                 _requestPool.Value.Del(entity);
             }
 

@@ -16,6 +16,7 @@ namespace BubbleShooter
         private readonly EcsPoolInject<OpenCellRequest> _openCellRequest = default;
         private readonly EcsFilterInject<Inc<PlayerComponent, WayPointsComponent>> _filter = default;
         private GameObject _player;
+        private Vector3 _defaultScale;
         
         public void Run(IEcsSystems systems)
         {
@@ -27,6 +28,7 @@ namespace BubbleShooter
                 var filtredWayPoints = wayPointsComp.WayPointsPositions.Where(x => x != Vector3.zero).ToArray();
                 
                 _player = playerComponent.PlayerSphere;
+                _defaultScale = _player.transform.localScale;
                 var hittedCell = wayPointsComp.HittedCell;
                 
                 _player.transform.DOPath(filtredWayPoints, filtredWayPoints.Length / 2f)
@@ -51,7 +53,8 @@ namespace BubbleShooter
 
         private void Shake(int value)
         {
-            _player.transform.DOShakeScale(0.5f, 0.5f, 10, 10, true, ShakeRandomnessMode.Harmonic);
+            _player.transform.DOShakeScale(0.5f, 0.5f, 10, 10, true, ShakeRandomnessMode.Harmonic)
+                .OnComplete(() => _player.transform.localScale = _defaultScale);
         }
     }
 }

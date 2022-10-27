@@ -74,11 +74,13 @@ namespace BubbleShooter
         [Button("Select Neighbours")]
         private void SelectNeighbours()
         {
+#if UNITY_EDITOR
             if (NeighboursList.Count != 0)
             {
                 Selection.objects = NeighboursList.Select(x => x.gameObject).ToArray();
                 NeighboursList.ForEach(x => DebugExtension.DebugWireSphere(x.transform.position, Color.magenta, 0.3f, 3f));
             }
+#endif
         }
 
         //[Button("Blow!")]

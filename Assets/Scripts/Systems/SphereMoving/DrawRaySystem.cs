@@ -1,5 +1,8 @@
-﻿using Leopotam.EcsLite;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Leopotam.EcsLite;
 using Leopotam.EcsLite.Di;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -53,6 +56,9 @@ namespace BubbleShooter
             var direction = new Vector3(joystickComp.Horizontal * -1, joystickComp.Vertical * -1, 0);
             var depth = 0;
             RayCast( Vector3.zero, direction, depth);
+            var lineRendererPosition = new List<Vector3> {Vector3.zero};
+            lineRendererPosition.AddRange(_hitPointPositions);
+            _levelSettings.Value.Line.SetPositions(lineRendererPosition.ToArray());
         }
 
         private void RayCast(Vector3 startPos, Vector3 direction, int depth)
