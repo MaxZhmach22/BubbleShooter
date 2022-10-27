@@ -64,7 +64,10 @@ namespace BubbleShooter
 #endif
                 .Add(new InputRunSystem())
                 .Add(new MouseButtonInputSystem())
-                .Add(new PlayerMovement());
+                .Add(new PlayerMovement())
+                .Add(new GridCheckSystem())
+                .Add(new ChangeColorSystem())
+                .Add(new WinSystem());
         }
 
         private void InjectDependencies()

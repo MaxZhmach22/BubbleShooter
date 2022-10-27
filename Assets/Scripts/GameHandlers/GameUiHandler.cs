@@ -12,6 +12,7 @@ namespace GameHandlers
     {
         [field: Foldout("Reference")] [field: SerializeField] public GameScreen GameScreen { get; private set; }
         [field: Foldout("Reference")] [field: SerializeField] public GridCreator GridCreator { get; private set; }
+        [field: Foldout("Reference")] [field: SerializeField] public WinScreen WinScreen { get; private set; }
 
         private void Awake()
         {
@@ -34,6 +35,10 @@ namespace GameHandlers
                     }
                     SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
                 })
+                .AddTo(this);
+            
+            WinScreen.Exit.OnClickAsObservable()
+                .Subscribe(_ => Application.Quit())
                 .AddTo(this);
         }
     }

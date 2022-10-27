@@ -100,7 +100,11 @@ namespace BubbleShooter
                 cancellationToken: this.GetCancellationTokenOnDestroy());
             Renderer.gameObject.transform.DOScale(Vector3.one * 1.2f, 1f)
                 .SetEase(Ease.OutElastic)
-                .OnComplete(() => gameObject.SetActive(false));
+                .OnComplete(() =>
+                {
+                    Renderer.enabled = false;
+                    Collider.enabled = false;
+                });
         }
 
         public void Reset()

@@ -16,6 +16,7 @@ namespace BubbleShooter
         private readonly EcsFilterInject<Inc<JoystickComponent, MouseButtonUpRequest>> _filterMouseUp = default;
         private readonly EcsFilterInject<Inc<PlayerComponent>, Exc<WayPointsComponent>> _filterPlayer = default;
         private Vector3[] _hitPointPositions;
+        private CellView _hittedCell;
         
         public void Run(IEcsSystems systems)
         {
@@ -31,6 +32,11 @@ namespace BubbleShooter
                 {
                     ref var wayPointsComp = ref _wayPointsPool.Value.Add(player);
                     wayPointsComp.WayPointsPositions = _hitPointPositions;
+
+                    if (_hittedCell)
+                        wayPointsComp.HittedCell = _hittedCell;
+                    else
+                        wayPointsComp.HittedCell = null;
                 }
                 
                 if (_mouseUpRequest.Value.Has(entity))
@@ -42,6 +48,7 @@ namespace BubbleShooter
 
         private void DrawRay(JoystickComponent joystickComp)
         {
+            _hittedCell = null;
             _hitPointPositions = new Vector3[10];
             var direction = new Vector3(joystickComp.Horizontal * -1, joystickComp.Vertical * -1, 0);
             var depth = 0;
@@ -60,6 +67,7 @@ namespace BubbleShooter
                 depth++;
                 if (hitInfo.transform.parent.TryGetComponent<CellView>(out var cellView))
                 {
+                    _hittedCell = cellView;
                     return;
                 }
 
